@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>UI框架使用方法 | Little Room</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://wshine233.github.io/favicon.ico?v=1688541908765">
+<link rel="stylesheet" href="https://wshine233.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="目前的框架可以实现如图所示的效果：
+
+主要实现的功能包括：
+
+SO存储某个页面所需要的UI窗口列表
+通过单例控制窗口的打开和关闭（创建和销毁）
+每个窗口可自行编写创建和销毁代码
+
+结构
+
+使用示例
+以前文动图为例，制作一个简单的弹出提示框。..." />
+    <meta name="keywords" content="Astraeus,wiki,游戏开发" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://wshine233.github.io">
+        <img src="https://wshine233.github.io/images/avatar.png?v=1688541908765" class="site-logo">
+        <h1 class="site-title">Little Room</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Loading......
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://wshine233.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">UI框架使用方法</h2>
+            <div class="post-date">2023-07-05</div>
+            
+              <div class="feature-container" style="background-image: url('https://wshine233.github.io/post-images/ui-kuang-jia-shi-yong-fang-fa.gif')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>目前的框架可以实现如图所示的效果：<br>
+<img src="https://wshine233.github.io/post-images/1688541098008.gif" alt="注意，每次弹出的文本是不同的" loading="lazy"><br>
+主要实现的功能包括：</p>
+<ul>
+<li>SO存储某个页面所需要的UI窗口列表</li>
+<li>通过单例控制窗口的打开和关闭（创建和销毁）</li>
+<li>每个窗口可自行编写创建和销毁代码</li>
+</ul>
+<h1 id="结构">结构</h1>
+<figure data-type="image" tabindex="1"><img src="https://wshine233.github.io/post-images/1688541155785.png" alt="" loading="lazy"></figure>
+<h1 id="使用示例">使用示例</h1>
+<p>以前文动图为例，制作一个简单的弹出提示框。</p>
+<h2 id="1-制作ui-prefab">1. 制作UI Prefab</h2>
+<p>先使用UGUI完成一个界面的样式和内部功能，如下所示：<br>
+<img src="https://wshine233.github.io/post-images/1688541208204.png" alt="" loading="lazy"><br>
+将其保存为Prefab<br>
+<img src="https://wshine233.github.io/post-images/1688541228530.png" alt="" loading="lazy"></p>
+<h2 id="2-继承basewindow">2. 继承BaseWindow</h2>
+<p><strong>BaseWindow</strong>的代码如下：</p>
+<pre><code class="language-csharp">using System;
+using System.Security.Cryptography.X509Certificates;
+using UnityEngine;
+
+namespace Astraeus.UI.Elements
+{
+    public abstract class BaseWindow : MonoBehaviour
+    {
+        public string Id =&gt; _id;
+        private string _id;
+
+        public void Init()
+        {
+            _id = Guid.NewGuid().ToString();
+        }
+
+        /// &lt;summary&gt;
+        /// 打开窗口时调用
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;param&quot;&gt;创建窗口时传递的参数&lt;/param&gt;
+        public abstract void OnOpen(params object[] param);
+
+        /// &lt;summary&gt;
+        /// 关闭窗口时调用
+        /// &lt;/summary&gt;
+        public abstract void OnClose();
+    }
+}
+</code></pre>
+<p>如果只是单纯的出现和消失且不用任何参数，可以使用已经写好的<strong>SimpleWindow</strong>。</p>
+<pre><code class="language-csharp">namespace Astraeus.UI.Elements
+{
+    public class SimpleWindow : BaseWindow
+    {
+        public override void OnOpen(params object[] param)
+        {
+            // UIManager中已经将窗口Prefab创建好了，在此直接将窗口设置为可见
+            // 不写也可以，因为默认就是可见的
+            gameObject.SetActive(true);
+        }
+        
+        public override void OnClose()
+        {
+            // 关闭窗口时，直接销毁窗口
+        	// OnClose中必须包含该销毁代码
+            Destroy(gameObject);
+        }
+        
+    }
+}
+</code></pre>
+<p>为了让提示框的出现和消失都包含动画效果，可以选择<strong>继承BaseWindow</strong>，<strong>自行重写OnOpen和OnClose方法</strong>。<br>
+因为提示框中的文本需要支持自定义，所以打开窗口时要传入显示文本，同时这里也要进行处理。</p>
+<pre><code class="language-csharp">using DG.Tweening;
+using TMPro;
+using UnityEngine;
+
+namespace Astraeus.UI.Elements
+{
+    public class DialogWindow : BaseWindow
+    {
+        // 用于显示文本的Text组件，Prefab中自行拖放
+        public TMP_Text text;
+        
+        public override void OnOpen(params object[] param)
+        {
+            // 设置窗口可见
+            gameObject.SetActive(true);
+
+            // 窗口从下方弹出的动画效果，使用DOTween插件实现
+            var tf = transform;
+            var pos = tf.position;
+            tf.position = new Vector3(pos.x, -5, pos.z);
+            
+            var tween = transform.DOMoveY(0, 0.3f);
+            tween.SetEase(Ease.OutBack);
+
+            // 设置窗口的文本，如果传入了相关参数的话
+            if (param.Length &gt; 0 &amp;&amp; param[0] is string s)
+            {
+                text.text = s;
+            }
+        }
+
+        public override void OnClose()
+        {
+            // 窗口从下方收回的动画效果，使用DOTween插件实现
+            var tween = transform.DOMoveY(-10, 0.4f);
+            tween.SetEase(Ease.InBack);
+            tween.OnComplete(() =&gt;
+            {
+                // 当动画完成后，再销毁窗口
+                Destroy(gameObject);
+            });
+        }
+    }
+}
+</code></pre>
+<p>最后，将写好的脚本挂载到Prefab下：<br>
+<img src="https://wshine233.github.io/post-images/1688541252665.png" alt="" loading="lazy"></p>
+<h2 id="3-加入windowlist">3. 加入WindowList</h2>
+<p>将做好的窗口Prefab拖入WindowList的ScriptableObject中，如果原先没有该文件则新建一个。<br>
+<img src="https://wshine233.github.io/post-images/1688541283433.png" alt="" loading="lazy"><br>
+然后新建列表项，将之前做好的Prefab拖入列表中，会关联其BaseWindow脚本<br>
+<img src="https://wshine233.github.io/post-images/1688541301416.png" alt="" loading="lazy"></p>
+<h2 id="4-场景内创建uimanager">4. 场景内创建UIManager</h2>
+<p>在场景中加入UIManager脚本，并将之前创建的WindowList拖入<br>
+<img src="https://wshine233.github.io/post-images/1688541328192.png" alt="" loading="lazy"></p>
+<h2 id="5-创建触发按钮">5. 创建触发按钮</h2>
+<p>之后就是在需要的时候调用方法打开该窗口，在此我们创建一个按钮，让其点击时调用创建和关闭的代码。<br>
+测试脚本如下：</p>
+<pre><code class="language-csharp">using System;
+using Astraeus.Manager;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Astraeus.MainGame.Scripts.Test
+{
+    [RequireComponent(typeof(Button))]
+    public class DialogTestButton : MonoBehaviour
+    {
+        private Button _button;
+        private string _activeDialogId;
+
+        private void Awake()
+        {
+            _button = GetComponent&lt;Button&gt;();
+        }
+        
+        private void Start()
+        {
+            _button.onClick.AddListener(() =&gt;
+            {
+                if (_activeDialogId != null)
+                {
+                    // 如果已经打开了对话框，就关闭它
+                    UIManager.Instance.CloseWindow(_activeDialogId);
+                    _activeDialogId = null;
+                    return;
+                }
+                
+                // 打开对话框，将提示框内文字设置成&quot;Test Content!&quot; + 随机Guid
+                _activeDialogId = UIManager.Instance.OpenWindow(&quot;AlertDialog&quot;, new object[]{&quot;Test Content!&quot; + Guid.NewGuid()});
+            });
+        }
+    }
+}
+</code></pre>
+<p>运行，完毕<br>
+<img src="https://wshine233.github.io/post-images/1688541346455.gif" alt="注意，每次弹出的文本是不同的，说明确实自定义了文本框内容" title="注意，每次弹出的文本是不同的，说明确实自定义了文本框内容" loading="lazy"><br>
+注意，每次弹出的文本是不同的，说明确实自定义了文本框内容</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://wshine233.github.io/tag/C1HeSXr8W/" class="tag">
+                    Astraeus
+                  </a>
+                
+                  <a href="https://wshine233.github.io/tag/X8tj72G0Ym/" class="tag">
+                    wiki
+                  </a>
+                
+                  <a href="https://wshine233.github.io/tag/JFsOJInoDN/" class="tag">
+                    游戏开发
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://wshine233.github.io/post/flypaper/">
+                  <h3 class="post-title">
+                    Flypaper（捕蝇纸）—— 一部被名字耽误的高分犯罪喜剧
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

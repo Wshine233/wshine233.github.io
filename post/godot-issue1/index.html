@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Godot 细节/玄学错误（一）——明明指定了公有的变量或函数，却无法使用或获取？ | Little Room</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://wshine233.github.io/favicon.ico?v=1688541908765">
+<link rel="stylesheet" href="https://wshine233.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="注意，请检查调试器内是否报相似错误：_create_instance: Condition &quot;r_error.error != Variant::CallError::CALL_OK&quot; is true. Returned..." />
+    <meta name="keywords" content="godot,游戏开发" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://wshine233.github.io">
+        <img src="https://wshine233.github.io/images/avatar.png?v=1688541908765" class="site-logo">
+        <h1 class="site-title">Little Room</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      Loading......
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://wshine233.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Godot 细节/玄学错误（一）——明明指定了公有的变量或函数，却无法使用或获取？</h2>
+            <div class="post-date">2021-07-15</div>
+            
+              <div class="feature-container" style="background-image: url('https://wshine233.github.io/post-images/godot-issue1.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>注意，请检查调试器内是否报相似错误：_create_instance: Condition &quot;r_error.error != Variant::CallError::CALL_OK&quot; is true. Returned: __null</p>
+<!-- more -->
+<p>今天实在是被这个问题给整了很久，解决办法其实很简单，不过先说说该问题的特征吧。</p>
+<h2 id="问题特征">问题特征</h2>
+<p>如题，今天在调试时发现了一个问题：<br>
+<img src="https://wshine233.github.io/post-images/1626316899355.png" alt="" loading="lazy"><br>
+然而运行时却报错显示<span style="color:red">Invalid set index 'id' (on base: 'Node2D') with value of type 'int'.</span><br>
+但我在script中的确定义了这个变量<br>
+<img src="https://wshine233.github.io/post-images/1626317316354.png" alt="" loading="lazy"><br>
+是不是节点加载顺序的原因呢？我又单独启动该场景进行测试<br>
+结果，就算是单独加载这个场景，也没办法正常使用变量，甚至于<strong>整个script都没有被链接到节点上</strong></p>
+<p>此时，调试器输出中报错<span style="color:red">_create_instance: Condition &quot;r_error.error != Variant::CallError::CALL_OK&quot; is true. Returned: __null</span></p>
+<h2 id="解决方案">解决方案</h2>
+<p>将报错文本粘贴到百度搜索框中一无所获，使用必应搜索第一个结果就是……（话说bing已经在这方面帮了我很多次了，搜索结果方面还是bing强）<br>
+<img src="https://wshine233.github.io/post-images/1626317739498.png" alt="" loading="lazy"><br>
+在此附上issue的<a href="https://github.com/godotengine/godot/issues/13440">链接</a></p>
+<p>导致出错的因素比较多，最常见且容易忽略的因素便是满足以下条件：</p>
+<ul>
+<li>在一个根节点上链接了脚本</li>
+<li>脚本中含有一个自定义的_init()函数</li>
+</ul>
+<p>结合github上大佬的一些说法，问题大概是由于系统在调用_init()构造函数时，由于函数被重写后拥有了参数，导致系统无法调用该函数而出现问题。</p>
+<p><strong>解决</strong>的方法有两种：</p>
+<ol>
+<li>把构造参数加上默认值</li>
+<li>删除整个自定义的构造函数</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://wshine233.github.io/tag/81NvsMsWM/" class="tag">
+                    godot
+                  </a>
+                
+                  <a href="https://wshine233.github.io/tag/JFsOJInoDN/" class="tag">
+                    游戏开发
+                  </a>
+                
+              </div>
+            
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
